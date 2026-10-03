@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Sonique Calibration Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a bench test report — one reading column, wide data tables that scroll on their own, meter photos at the end. */
+:root {
+  --bg: #f6f7f8; --paper: #ffffff; --ink: #14181d; --ink-2: #4a525c; --ink-3: #6b7480;
+  --rule: #dde1e6; --rule-2: #eef0f3; --accent: #0d5c75; --accent-soft: #e3f0f4;
+  --pass: #1b6e3a; --pass-bg: #e5f3ea; --warn: #8a5600; --warn-bg: #fbf0dc;
+  --fail: #b42318; --fail-bg: #fde8e6; --check: #5243aa; --check-bg: #ecebfa;
+  --band: rgba(27,110,58,.08); --limit: #b42318;
+  --s125: #2a78d6; --s250: #eb6834; --s500: #1baf7a; --s1000: #eda100; --s2000: #e87ba4; --s4000: #008300; --s8000: #4a3aa7;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1316; --paper: #161b20; --ink: #eef1f4; --ink-2: #b4bcc6; --ink-3: #8b95a1;
+  --rule: #2a323a; --rule-2: #1e252b; --accent: #6cc0dc; --accent-soft: #15323d;
+  --pass: #6fd08f; --pass-bg: #143222; --warn: #f0b851; --warn-bg: #3a2a0c;
+  --fail: #ff8a7f; --fail-bg: #3d1714; --check: #aea4f5; --check-bg: #24204a;
+  --band: rgba(111,208,143,.09); --limit: #ff8a7f;
+  --s125: #3987e5; --s250: #d95926; --s500: #199e70; --s1000: #c98500; --s2000: #d55181; --s4000: #008300; --s8000: #9085e9;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1316; --paper: #161b20; --ink: #eef1f4; --ink-2: #b4bcc6; --ink-3: #8b95a1;
+  --rule: #2a323a; --rule-2: #1e252b; --accent: #6cc0dc; --accent-soft: #15323d;
+  --pass: #6fd08f; --pass-bg: #143222; --warn: #f0b851; --warn-bg: #3a2a0c;
+  --fail: #ff8a7f; --fail-bg: #3d1714; --check: #aea4f5; --check-bg: #24204a;
+  --band: rgba(111,208,143,.09); --limit: #ff8a7f;
+  --s125: #3987e5; --s250: #d95926; --s500: #199e70; --s1000: #c98500; --s2000: #d55181; --s4000: #008300; --s8000: #9085e9;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 36px 64px; display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(28px, 4.4vw, 40px); letter-spacing: -.01em; }
+h2 { font-size: 24px; }
+h3 { font-size: 17px; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font: 500 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--ink-3); }
+section { display: grid; gap: 16px; min-width: 0; }
+.sec-head { display: grid; gap: 6px; border-top: 2px solid var(--ink); padding-top: 14px; }
+.sec-head p { color: var(--ink-2); }
+
+/* header */
+header { display: grid; gap: 18px; }
+.meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--rule); background: var(--paper); border-radius: 6px; }
+.meta div { padding: 10px 14px; border-right: 1px solid var(--rule-2); border-bottom: 1px solid var(--rule-2); min-width: 0; }
+.meta dt { font: 500 11px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); }
+.meta dd { margin: 2px 0 0; font-weight: 500; }
+@media (max-width: 640px) { .meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.lede { font-size: 17px; color: var(--ink-2); }
+
+/* findings */
+.findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; }
+.findings li { display: grid; grid-template-columns: 112px 1fr; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--rule-2); align-items: start; }
+.findings li:last-child { border-bottom: 0; }
+.findings b { font-weight: 600; }
+.findings .st { margin-top: 2px; }
+@media (max-width: 560px) { .findings li { grid-template-columns: 1fr; gap: 6px; } }
+
+/* status chips */
+.st { display: inline-flex; align-items: center; gap: 5px; font: 500 12px/1 var(--f-body); padding: 4px 8px 4px 6px; border-radius: 4px; white-space: nowrap; }
+.st span { font: 600 11px/1 var(--f-mono); width: 14px; height: 14px; display: inline-grid; place-items: center; border-radius: 50%; }
+.st-pass { color: var(--pass); background: var(--pass-bg); } .st-pass span { border: 1.5px solid currentColor; }
+.st-warn { color: var(--warn); background: var(--warn-bg); } .st-warn span { border: 1.5px solid currentColor; }
+.st-fail { color: var(--fail); background: var(--fail-bg); } .st-fail span { background: var(--fail); color: var(--fail-bg); }
+.st-check { color: var(--check); background: var(--check-bg); } .st-check span { border: 1.5px dashed currentColor; }
+
+/* tables */
+.tscroll { overflow-x: auto; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 14px; }
+thead th { position: sticky; top: 0; background: var(--paper); text-align: left; font: 600 11.5px/1.3 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--ink); padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: bottom; }
+thead th.num { text-align: right; }
+thead th.exp { color: var(--pass); font-weight: 700; }
+thead th.obs { color: var(--fail); font-weight: 700; }
+td { padding: 7px 12px; border-bottom: 1px solid var(--rule-2); vertical-align: top; }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+td.bad { color: var(--fail); font-weight: 500; }
+td.near { color: var(--warn); font-weight: 500; }
+td.com { color: var(--ink-2); min-width: 240px; }
+td.shots { white-space: nowrap; }
+.grp-h th { text-align: left; padding: 14px 12px 6px; background: var(--rule-2); border-bottom: 1px solid var(--rule); }
+.grp-h .f { font: 600 16px/1 var(--f-display); margin-right: 12px; }
+.grp-h .sub { font: 400 12px/1 var(--f-mono); color: var(--ink-3); }
+tr.note td { color: var(--ink); background: var(--accent-soft); font-size: 13.5px; padding-block: 8px; }
+.tag { font: 500 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); border: 1px solid var(--rule); border-radius: 3px; padding: 2px 5px; margin-left: 4px; white-space: nowrap; cursor: help; }
+.shot { font: 500 12px/1 var(--f-mono); color: var(--accent); background: var(--accent-soft); border: 0; border-radius: 4px; padding: 5px 7px; cursor: pointer; margin: 0 2px 2px 0; }
+.shot:hover { filter: brightness(.95); text-decoration: underline; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.legend-line { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--ink-2); }
+.legend-line > span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* test signals */
+.sig { display: grid; gap: 12px; }
+.sig .hd { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sig table { min-width: 760px; }
+.sig td.com { min-width: 260px; }
+.media { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.media figure { margin: 0; display: grid; gap: 6px; align-content: start; }
+.media video { width: 100%; aspect-ratio: 9 / 16; max-height: 360px; background: #000; border-radius: 4px; display: block; }
+.media figcaption { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; }
+.media figcaption b { font-weight: 600; color: var(--ink); display: block; }
+.media .ph { aspect-ratio: 3 / 4; }
+.who { font: 600 10.5px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; padding: 3px 6px; border-radius: 3px; display: inline-block; margin-bottom: 2px; justify-self: start; }
+.who-ours { color: var(--fail); background: var(--fail-bg); }
+.who-ref { color: var(--accent); background: var(--accent-soft); }
+.who-exp { color: var(--pass); background: var(--pass-bg); }
+td.obsv { color: var(--fail); font-weight: 600; }
+td.expv { color: var(--pass); font-weight: 600; }
+
+/* actions */
+.alist { background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 18px 20px; display: grid; gap: 10px; }
+.alist h3 { margin-top: 8px; }
+.alist h3:first-child { margin-top: 0; }
+.alist ol, .alist ul { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 90ch; }
+.alist li::marker { color: var(--ink-3); font-family: var(--f-mono); }
+
+/* gallery */
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.gal figure { margin: 0; display: grid; gap: 6px; align-content: start; }
+.ph { padding: 0; border: 1px solid var(--rule); border-radius: 4px; background: var(--rule-2); cursor: zoom-in; aspect-ratio: 1; overflow: hidden; display: block; width: 100%; }
+.ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gal figcaption { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.gal figcaption b { font-family: var(--f-mono); color: var(--accent); margin-right: 4px; }
+#photos h3 { margin-top: 8px; }
+
+/* viewer */
+dialog { border: 0; padding: 0; background: var(--paper); color: var(--ink); border-radius: 8px; max-width: min(94vw, 900px); width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(8,12,16,.72); }
+.dv { display: grid; gap: 10px; padding: 14px; }
+.dv img { width: 100%; max-height: 72vh; object-fit: contain; background: var(--rule-2); border-radius: 4px; }
+.dv-bar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.dv-bar p { font-size: 14px; flex: 1 1 260px; }
+.dv-bar b { font-family: var(--f-mono); color: var(--accent); margin-right: 6px; }
+.btn { font: 500 13px/1 var(--f-body); color: var(--ink); background: var(--rule-2); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--ink-3); }
+footer { font-size: 13px; color: var(--ink-3); border-top: 1px solid var(--rule); padding-top: 14px; }
+@media (prefers-reduced-motion: no-preference) { .shot, .btn { transition: filter .12s, border-color .12s; } }
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">Bench review · output level and distortion</span>
+  <h1>Sonique audiometer: review with the audiologist</h1>
+  <p class="lede">Readings taken on 3 October 2026 with a sound level meter on the Sonique's headphones and bone vibrator, compared with the levels the standard expects, together with the audiologist's observations on the test signals and the software.</p>
+  <dl class="meta">
+    <div><dt>Date</dt><dd>3 Oct 2026</dd></div>
+    <div><dt>Device</dt><dd>Sonique, firmware v1.032</dd></div>
+    <div><dt>Meter</dt><dd>Larson Davis AudCal</dd></div>
+    <div><dt>Compared with</dt><dd>Interacoustics audiometer, same session</dd></div>
+    <div><dt>Level tolerance</dt><dd>±3 dB (8 kHz: ±5 dB)</dd></div>
+    <div><dt>Distortion limit</dt><dd>THD ≤ 2.5 %</dd></div>
+  </dl>
+</header>
+
+<section id="summary" aria-labelledby="h-summary">
+  <div class="sec-head"><h2 id="h-summary">What we found</h2>
+  <p>23 of 31 distortion readings are over 2.5 %, and 13 of 64 level readings are outside tolerance. Almost all of the distortion is the 3rd harmonic on the headphones and the 2nd harmonic on the bone vibrator at 250 Hz.</p></div>
+  <ul class="findings">
+    <li><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span><div><b>Headphone distortion between 90 and 115 dB HL.</b> 500 Hz, 1 kHz and 2 kHz all exceed 2.5 % THD in this range, peaking at 7.14 % (2 kHz, 100 dB HL) and 6.73 % (1 kHz, 105 dB HL). The 3rd harmonic accounts for nearly all of it, and THD falls again above 110 dB HL. The audiologist suggests filtering at the 3rd harmonic.</div></li>
+    <li><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span><div><b>Bone vibrator overdriven at 250 Hz.</b> THD climbs from 3.8 % at 40 dB HL to 25.7 % at 60 dB HL (2nd harmonic), and the level runs 1–4 dB high. Only levels up to 35 dB HL are clean.</div></li>
+    <li><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span><div><b>Warble tone is far off.</b> Carrier 1052 Hz instead of 1000, deviation 85.3 % (should be under 15 %), modulation rate 39.8 Hz (Interacoustics: 5 Hz).</div></li>
+    <li><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span><div><b>Pulse timing uneven.</b> 133.9 ms on and 265.7 ms off. The audiologist's target is 500 ms on and 500 ms off, as the Interacoustics audiometer gives (495.8 / 504.2 ms).</div></li>
+    <li><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span><div><b>Noise signals are not to specification.</b> White noise is shaped like speech noise rather than flat from 250 Hz to 20 kHz, and reads 5–9 dB high. Narrow-band noise is broadband, not a narrow peak around the centre frequency.</div></li>
+    <li><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span><div><b>Level dips at 4 and 8 kHz.</b> 4 kHz runs up to 2 dB low between 95 and 100 dB HL; 8 kHz up to 3.3 dB low between 85 and 95 dB HL. Both recover above 105 dB HL.</div></li>
+    <li><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span><div><b>Bone vibrator offsets and ceiling.</b> 500 Hz and 2 kHz are 4–4.5 dB high even after −20 dB of calibration; 4 kHz cannot go above 91.4 dB (60 dB HL usable).</div></li>
+    <li><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span><div><b>Good areas.</b> Low and mid levels are linear on the headphones; the bone vibrator at 1 kHz is within 0.5 dB from 20 to 70 dB HL; 4 kHz headphones show no distortion.</div></li>
+  </ul>
+</section>
+
+<section id="ac" aria-labelledby="h-ac">
+  <div class="sec-head"><span class="eyebrow">Test type</span><h2 id="h-ac">Air conduction (headphones)</h2>
+  <p>Expected = dial level + the reference offset for that frequency, as the audiologist used on the day. Rows marked <span class="tag">derived</span> had only a difference in the notes; their expected value comes from the offset and the measured value from that difference. Numbers next to each row open the meter photo.</p></div>
+  <div class="legend-line" aria-label="Status key">
+  </div>
+  <div class="tscroll"><table>
+    <thead><tr><th class="num">Dial dB HL</th><th class="num obs">Observed dB</th><th class="num exp">Expected dB</th><th class="num">Difference</th><th class="num">THD %</th><th>Status</th><th>Comments</th><th>Photo</th></tr></thead>
+    <tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">125 Hz</span><span class="sub">reference offset +45 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">50</td><td class="num">93.8</td><td class="num">95.0</td><td class="num">−1.2</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Within range. Distortion low. </td><td class="shots"><button type="button" class="shot" data-shot="8" aria-label="Open photo 8">8</button></td></tr>
+<tr><td class="num">75</td><td class="num">121.0</td><td class="num">120.0</td><td class="num">+1.0</td><td class="num bad">3.31</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">3rd harmonic 2.98 %. <span class="tag" title="The notes put 126.6 dB at 75 dB HL; the photos put it at 80. See Open questions">reconciled</span></td><td class="shots"><button type="button" class="shot" data-shot="5" aria-label="Open photo 5">5</button> <button type="button" class="shot" data-shot="6" aria-label="Open photo 6">6</button></td></tr>
+<tr><td class="num">80</td><td class="num">126.6</td><td class="num">125.0</td><td class="num">+1.6</td><td class="num bad">2.94</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">1.6 dB high. 3rd harmonic 2.62 %. <span class="tag" title="The notes put 126.6 dB at 75 dB HL; the photos put it at 80. See Open questions">reconciled</span></td><td class="shots"><button type="button" class="shot" data-shot="4" aria-label="Open photo 4">4</button> <button type="button" class="shot" data-shot="7" aria-label="Open photo 7">7</button></td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">250 Hz</span><span class="sub">reference offset +25.5 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">80</td><td class="num">105.3</td><td class="num">105.5</td><td class="num">−0.2</td><td class="num bad">3.01</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Distortion starts here. 3rd harmonic 2.37 %. <span class="tag" title="Expected from the reference offset; measured from the difference in the notes">derived</span></td><td class="shots"><button type="button" class="shot" data-shot="3" aria-label="Open photo 3">3</button></td></tr>
+<tr><td class="num">90</td><td class="num">115.0</td><td class="num">115.5</td><td class="num">−0.5</td><td class="num near">2.32</td><td><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span></td><td class="com">0.5 dB low. THD within limit but on the high side. <span class="tag" title="Expected from the reference offset; measured from the difference in the notes">derived</span></td><td class="shots"><button type="button" class="shot" data-shot="1" aria-label="Open photo 1">1</button> <button type="button" class="shot" data-shot="2" aria-label="Open photo 2">2</button></td></tr>
+<tr class="note"><td colspan="8">Audiologist: do not go above 90 dB HL at 250 Hz.</td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">500 Hz</span><span class="sub">reference offset +11.5 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">70</td><td class="num">80.9</td><td class="num">81.5</td><td class="num">−0.6</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">0.6 dB low. <span class="tag" title="Expected from the reference offset; measured from the difference in the notes">derived</span></td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">80</td><td class="num"><span class="muted">OK</span></td><td class="num">91.5</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">OK. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">90</td><td class="num">101.6</td><td class="num">101.5</td><td class="num">+0.1</td><td class="num near">2.29</td><td><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span></td><td class="com">Level OK. THD within limit but should be lower. </td><td class="shots"><button type="button" class="shot" data-shot="9" aria-label="Open photo 9">9</button></td></tr>
+<tr><td class="num">100</td><td class="num">111.6</td><td class="num">111.5</td><td class="num">+0.1</td><td class="num bad">4.18</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level exact. Very high distortion: 3rd 3.26 %, 5th 1.88 %. </td><td class="shots"><button type="button" class="shot" data-shot="10" aria-label="Open photo 10">10</button></td></tr>
+<tr><td class="num">105</td><td class="num">116.4</td><td class="num">116.5</td><td class="num">−0.1</td><td class="num bad">3.52</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">3rd 2.40 %, 5th 1.92 %. </td><td class="shots"><button type="button" class="shot" data-shot="11" aria-label="Open photo 11">11</button></td></tr>
+<tr><td class="num">110</td><td class="num">121.2</td><td class="num">121.5</td><td class="num">−0.3</td><td class="num bad">2.60</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Tone fine up to 110; only THD is high. </td><td class="shots"><button type="button" class="shot" data-shot="12" aria-label="Open photo 12">12</button></td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">1 kHz</span><span class="sub">reference offset +7 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">70</td><td class="num"><span class="muted">OK</span></td><td class="num">77.0</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Level and THD good. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">80</td><td class="num"><span class="muted">OK</span></td><td class="num">87.0</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Level and THD good. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">90</td><td class="num">101.4</td><td class="num">97.0</td><td class="num bad">+4.4</td><td class="num bad">2.95</td><td><span class="st st-check"><span aria-hidden="true">?</span>Check</span></td><td class="com">Notes: level within 0.5 dB, THD high. The photo reads 101.4 dB, which matches 95 dB HL. </td><td class="shots"><button type="button" class="shot" data-shot="13" aria-label="Open photo 13">13</button></td></tr>
+<tr><td class="num">100</td><td class="num">106.1</td><td class="num">107.0</td><td class="num">−0.9</td><td class="num bad">6.23</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">1 dB low. 3rd harmonic 6.06 %. </td><td class="shots"><button type="button" class="shot" data-shot="14" aria-label="Open photo 14">14</button></td></tr>
+<tr><td class="num">105</td><td class="num">111.4</td><td class="num">112.0</td><td class="num">−0.6</td><td class="num bad">6.73</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">0.6 dB low. 3rd harmonic 6.35 %. </td><td class="shots"><button type="button" class="shot" data-shot="15" aria-label="Open photo 15">15</button></td></tr>
+<tr><td class="num">110</td><td class="num">116.7</td><td class="num">117.0</td><td class="num">−0.3</td><td class="num bad">5.44</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. 3rd harmonic 4.85 %. </td><td class="shots"><button type="button" class="shot" data-shot="16" aria-label="Open photo 16">16</button></td></tr>
+<tr><td class="num">115</td><td class="num">121.7</td><td class="num">122.0</td><td class="num">−0.3</td><td class="num bad">3.97</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. 3rd harmonic 3.38 %. </td><td class="shots"><button type="button" class="shot" data-shot="17" aria-label="Open photo 17">17</button></td></tr>
+<tr><td class="num">120</td><td class="num">126.7</td><td class="num">127.0</td><td class="num">−0.3</td><td class="num bad">2.76</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. 3rd harmonic 2.26 %. </td><td class="shots"><button type="button" class="shot" data-shot="18" aria-label="Open photo 18">18</button></td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">2 kHz</span><span class="sub">reference offset +9 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">90</td><td class="num">98.6</td><td class="num">99.0</td><td class="num">−0.4</td><td class="num near">2.30</td><td><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span></td><td class="com">Level OK. </td><td class="shots"><button type="button" class="shot" data-shot="19" aria-label="Open photo 19">19</button></td></tr>
+<tr><td class="num">95</td><td class="num">103.0</td><td class="num">104.0</td><td class="num">−1.0</td><td class="num bad">5.85</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">1 dB low. 3rd harmonic 5.83 %. </td><td class="shots"><button type="button" class="shot" data-shot="20" aria-label="Open photo 20">20</button></td></tr>
+<tr><td class="num">100</td><td class="num">108.3</td><td class="num">109.0</td><td class="num">−0.7</td><td class="num bad">7.14</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">0.7 dB low. 3rd harmonic 7.10 %: the worst reading of the day. </td><td class="shots"><button type="button" class="shot" data-shot="21" aria-label="Open photo 21">21</button></td></tr>
+<tr><td class="num">105</td><td class="num">113.9</td><td class="num">114.0</td><td class="num">−0.1</td><td class="num bad">5.93</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. 3rd harmonic 5.82 %. </td><td class="shots"><button type="button" class="shot" data-shot="22" aria-label="Open photo 22">22</button></td></tr>
+<tr><td class="num">110</td><td class="num">119.2</td><td class="num">119.0</td><td class="num">+0.2</td><td class="num bad">4.30</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. Spectrum (24) shows the 3rd harmonic at 6 kHz. </td><td class="shots"><button type="button" class="shot" data-shot="23" aria-label="Open photo 23">23</button> <button type="button" class="shot" data-shot="24" aria-label="Open photo 24">24</button></td></tr>
+<tr><td class="num">115</td><td class="num">124.4</td><td class="num">124.0</td><td class="num">+0.4</td><td class="num bad">2.91</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Level OK. </td><td class="shots"><button type="button" class="shot" data-shot="25" aria-label="Open photo 25">25</button></td></tr>
+<tr><td class="num">120</td><td class="num">129.4</td><td class="num">129.0</td><td class="num">+0.4</td><td class="num near">2.02</td><td><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span></td><td class="com">Level OK. THD normal. </td><td class="shots"><button type="button" class="shot" data-shot="26" aria-label="Open photo 26">26</button></td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">4 kHz</span><span class="sub">reference offset +9.5 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">80</td><td class="num">89.8</td><td class="num">89.5</td><td class="num">+0.3</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Linear up to here. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">85</td><td class="num">94.6</td><td class="num">94.8</td><td class="num">−0.2</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">90</td><td class="num">98.7</td><td class="num">99.5</td><td class="num">−0.8</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">95</td><td class="num">102.6</td><td class="num">104.5</td><td class="num">−1.9</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Almost 2 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">100</td><td class="num">107.7</td><td class="num">109.5</td><td class="num">−1.8</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">About 2 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">105</td><td class="num">113.8</td><td class="num">114.5</td><td class="num">−0.7</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">110</td><td class="num">119.5</td><td class="num">119.5</td><td class="num">±0.0</td><td class="num">0.36</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Perfect reading. </td><td class="shots"><button type="button" class="shot" data-shot="27" aria-label="Open photo 27">27</button></td></tr>
+<tr><td class="num">115</td><td class="num"><span class="muted">OK</span></td><td class="num">124.5</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">All good. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">120</td><td class="num"><span class="muted">OK</span></td><td class="num">129.5</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">All good. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr class="note"><td colspan="8">No distortion at 4 kHz; the problem is level linearity between 85 and 105 dB HL.</td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">8 kHz</span><span class="sub">reference offset +13 dB · tolerance ±5 dB</span></th></tr>
+<tr><td class="num">70</td><td class="num">83.4</td><td class="num">83.0</td><td class="num">+0.4</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">75</td><td class="num">88.0</td><td class="num">88.0</td><td class="num">±0.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Did not rise the full 5 dB from 70. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">80</td><td class="num">92.0</td><td class="num">93.0</td><td class="num">−1.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">1 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">85</td><td class="num">95.5</td><td class="num">98.0</td><td class="num">−2.5</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">2.5 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">90</td><td class="num">99.7</td><td class="num">103.0</td><td class="num">−3.3</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">3.3 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">95</td><td class="num">105.9</td><td class="num">108.0</td><td class="num">−2.1</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">2.1 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">100</td><td class="num">112.4</td><td class="num">113.0</td><td class="num">−0.6</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">105</td><td class="num">118.2</td><td class="num">118.0</td><td class="num">+0.2</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">110</td><td class="num">123.6</td><td class="num">123.0</td><td class="num">+0.6</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Maximum level at 8 kHz. </td><td class="shots"><span class="muted">—</span></td></tr>
+</tbody>
+  </table></div>
+</section>
+
+<section id="bc" aria-labelledby="h-bc">
+  <div class="sec-head"><span class="eyebrow">Test type</span><h2 id="h-bc">Bone conduction (vibrator)</h2>
+  <p>Measured on the meter in dB (force level). Expected values are the audiologist's. Each frequency shows the calibration value that was in the device during the readings; the final table is in photo <button type="button" class="shot" data-shot="41">41</button>.</p></div>
+  <div class="tscroll"><table>
+    <thead><tr><th class="num">Dial dB HL</th><th class="num obs">Observed dB</th><th class="num exp">Expected dB</th><th class="num">Difference</th><th class="num">THD %</th><th>Status</th><th>Comments</th><th>Photo</th></tr></thead>
+    <tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">250 Hz</span><span class="sub">calibration value used -16 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">35</td><td class="num"><span class="muted">OK</span></td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Good up to 35 dB HL. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">40</td><td class="num">94.9</td><td class="num">94.0</td><td class="num">+0.9</td><td class="num bad">3.84</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Notes say 0.5 dB high; the photo reads 94.9. 2nd harmonic 2.72 %. </td><td class="shots"><button type="button" class="shot" data-shot="31" aria-label="Open photo 31">31</button></td></tr>
+<tr><td class="num">45</td><td class="num">100.2</td><td class="num">99.0</td><td class="num">+1.2</td><td class="num bad">5.35</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">2nd harmonic 4.93 %. </td><td class="shots"><button type="button" class="shot" data-shot="32" aria-label="Open photo 32">32</button></td></tr>
+<tr><td class="num">50</td><td class="num">105.6</td><td class="num">104.0</td><td class="num">+1.6</td><td class="num bad">9.11</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">2nd harmonic 8.97 %. </td><td class="shots"><button type="button" class="shot" data-shot="33" aria-label="Open photo 33">33</button></td></tr>
+<tr><td class="num">55</td><td class="num">112.3</td><td class="num">109.0</td><td class="num bad">+3.3</td><td class="num bad">14.67</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">2nd harmonic 14.62 %. </td><td class="shots"><button type="button" class="shot" data-shot="34" aria-label="Open photo 34">34</button></td></tr>
+<tr><td class="num">60</td><td class="num">118.3</td><td class="num">114.0</td><td class="num bad">+4.3</td><td class="num bad">25.66</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">2nd harmonic 25.65 %. The vibrator is overdriven. </td><td class="shots"><button type="button" class="shot" data-shot="35" aria-label="Open photo 35">35</button></td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">500 Hz</span><span class="sub">calibration value used -20 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">20</td><td class="num">61.0</td><td class="num">57.0</td><td class="num bad">+4.0</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">30</td><td class="num">71.5</td><td class="num">67.0</td><td class="num bad">+4.5</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">40</td><td class="num">81.0</td><td class="num">77.0</td><td class="num bad">+4.0</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">50</td><td class="num">90.8</td><td class="num">87.0</td><td class="num bad">+3.8</td><td class="num bad">2.59</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><button type="button" class="shot" data-shot="36" aria-label="Open photo 36">36</button></td></tr>
+<tr><td class="num">60</td><td class="num">101.3</td><td class="num">97.0</td><td class="num bad">+4.3</td><td class="num">1.79</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><button type="button" class="shot" data-shot="37" aria-label="Open photo 37">37</button></td></tr>
+<tr class="note"><td colspan="8">About 4 dB high at every level, even with −20 applied. Linearity is good, so a further −4 should bring it in.</td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">1 kHz</span><span class="sub">calibration value used -20 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">20</td><td class="num">48.0</td><td class="num">48.0</td><td class="num">±0.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">30</td><td class="num">58.4</td><td class="num">58.0</td><td class="num">+0.4</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">40</td><td class="num">68.0</td><td class="num">68.0</td><td class="num">±0.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">50</td><td class="num">78.0</td><td class="num">78.0</td><td class="num">±0.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">60</td><td class="num">87.5</td><td class="num">88.0</td><td class="num">−0.5</td><td class="num near">2.50</td><td><span class="st st-warn"><span aria-hidden="true">!</span>Near limit</span></td><td class="com"> </td><td class="shots"><button type="button" class="shot" data-shot="38" aria-label="Open photo 38">38</button></td></tr>
+<tr><td class="num">70</td><td class="num">98.3</td><td class="num">98.0</td><td class="num">+0.3</td><td class="num">1.72</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><button type="button" class="shot" data-shot="39" aria-label="Open photo 39">39</button></td></tr>
+<tr class="note"><td colspan="8">Good at every level.</td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">2 kHz</span><span class="sub">calibration value used -20 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">30</td><td class="num">55.5</td><td class="num">51.0</td><td class="num bad">+4.5</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">40</td><td class="num">65.5</td><td class="num">61.0</td><td class="num bad">+4.5</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">50</td><td class="num">75.5</td><td class="num">71.0</td><td class="num bad">+4.5</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">60</td><td class="num">84.1</td><td class="num">81.0</td><td class="num bad">+3.1</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">70</td><td class="num">94.9</td><td class="num">91.0</td><td class="num bad">+3.9</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr class="note"><td colspan="8">About 4.5 dB high with −20; audiologist: needs about −25. Little distortion.</td></tr>
+</tbody>
+<tbody class="grp"><tr class="grp-h"><th colspan="8" scope="colgroup"><span class="f">4 kHz</span><span class="sub">calibration value used -6 dB · tolerance ±3 dB</span></th></tr>
+<tr><td class="num">30</td><td class="num">58.6</td><td class="num">59.0</td><td class="num">−0.4</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com"> </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">40</td><td class="num">68.2</td><td class="num">69.0</td><td class="num">−0.8</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">Check against the B71 drive voltages (photo 40). </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">50</td><td class="num">77.0</td><td class="num">79.0</td><td class="num">−2.0</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">2 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">60</td><td class="num">87.9</td><td class="num">89.0</td><td class="num">−1.1</td><td class="num">—</td><td><span class="st st-pass"><span aria-hidden="true">✓</span>Pass</span></td><td class="com">1.1 dB low. </td><td class="shots"><span class="muted">—</span></td></tr>
+<tr><td class="num">70</td><td class="num">91.4</td><td class="num">99.0</td><td class="num bad">−7.6</td><td class="num">—</td><td><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></td><td class="com">Output stops at 91.4 dB; it does not go higher. </td><td class="shots"><span class="muted">—</span></td></tr>
+</tbody>
+  </table></div>
+</section>
+
+<section id="stimuli" aria-labelledby="h-stim">
+<div class="sec-head"><span class="eyebrow">Test signals</span><h2 id="h-stim">Pulse, warble and noise</h2><p>Each signal compares the Sonique reading with the Interacoustics audiometer measured on the same meter, and with what is expected.</p></div>
+<div class="card sig"><div class="hd"><h3>Pulse tone · 1 kHz, 100 dB HL</h3><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></div><div class="tscroll"><table><thead><tr><th>Parameter</th><th class="num obs">Sonique (observed)</th><th class="num">Interacoustics</th><th class="num exp">Expected</th><th>What is wrong</th></tr></thead><tbody><tr><td>On time</td><td class="num obsv">133.9 ms</td><td class="num">495.8 ms</td><td class="num expv">500 ms</td><td class="com">Far too short. On and off should be equal.</td></tr><tr><td>Off time</td><td class="num obsv">265.7 ms</td><td class="num">504.2 ms</td><td class="num expv">500 ms</td><td class="com">Twice the on time.</td></tr><tr><td>Rise time</td><td class="num obsv">48.3 ms</td><td class="num">33.8 ms</td><td class="num expv">100 ms</td><td class="com">Shorter than the 100 ms in the audiologist&#x27;s sketch.</td></tr><tr><td>Fall time</td><td class="num obsv">48.6 ms</td><td class="num">33.8 ms</td><td class="num expv">100 ms</td><td class="com">Shorter than the 100 ms in the audiologist&#x27;s sketch.</td></tr><tr><td>Plateau</td><td class="num obsv">92.0 ms</td><td class="num">467.0 ms</td><td class="num expv">300 ms</td><td class="com">Far too short.</td></tr><tr><td>On/off ratio</td><td class="num obsv">20.2 dB</td><td class="num">20.3 dB</td><td class="num expv">—</td><td class="com">Same as Interacoustics.</td></tr><tr><td>Overshoot</td><td class="num obsv">−0.6 dB</td><td class="num">−0.6 dB</td><td class="num expv">—</td><td class="com">Same as Interacoustics.</td></tr></tbody></table></div><div class="media"><figure><span class="who who-ours">Sonique</span><button type="button" class="ph" data-shot="29" aria-label="Enlarge photo 29"><img src="media/s29.jpg" alt="Pulse 1 kHz · Sonique: on 133.9 ms, off 265.7 ms" loading="lazy"></button><figcaption><b>Photo 29</b>Sonique pulse measured on the meter.</figcaption></figure><figure><span class="who who-exp">Expected</span><button type="button" class="ph" data-shot="30" aria-label="Enlarge photo 30"><img src="media/s30.jpg" alt="Audiologist&#x27;s pulse target: 500 ms on / 500 ms off, rise 100 · plateau 300 · fall 100 ms" loading="lazy"></button><figcaption><b>Photo 30</b>How it should be: 500 ms on, 500 ms off; rise 100, plateau 300, fall 100 ms.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><button type="button" class="ph" data-shot="45" aria-label="Enlarge photo 45"><img src="media/s45.jpg" alt="Interacoustics · pulse: on 495.8 ms, off 504.2 ms" loading="lazy"></button><figcaption><b>Photo 45</b>Interacoustics pulse measured on the meter.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><video controls preload="metadata" playsinline poster="media/v160256.jpg" src="media/v160256.mp4"></video><figcaption><b>Video 20261003_160256</b>Pulse tone.</figcaption></figure></div></div>
+<div class="card sig"><div class="hd"><h3>Warble tone · 1 kHz, 100 dB HL</h3><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></div><div class="tscroll"><table><thead><tr><th>Parameter</th><th class="num obs">Sonique (observed)</th><th class="num">Interacoustics</th><th class="num exp">Expected</th><th>What is wrong</th></tr></thead><tbody><tr><td>Carrier</td><td class="num obsv">1052.0 Hz</td><td class="num">1000.2 Hz</td><td class="num expv">1000 Hz</td><td class="com">52 Hz high.</td></tr><tr><td>Maximum frequency</td><td class="num obsv">1500.8 Hz</td><td class="num">1051.7 Hz</td><td class="num expv">≤ 1150 Hz</td><td class="com">Swings far too wide.</td></tr><tr><td>Minimum frequency</td><td class="num obsv">603.2 Hz</td><td class="num">948.7 Hz</td><td class="num expv">≥ 850 Hz</td><td class="com">Swings far too wide.</td></tr><tr><td>Deviation</td><td class="num obsv">85.3 %</td><td class="num">10.3 %</td><td class="num expv">&lt; 15 %</td><td class="com">More than 5 times the limit. This pushes the other figures out as well.</td></tr><tr><td>Modulation rate</td><td class="num obsv">39.79 Hz</td><td class="num">5.00 Hz</td><td class="num expv">≈ 5 Hz</td><td class="com">About 8 times too fast.</td></tr></tbody></table></div><div class="media"><figure><span class="who who-ours">Sonique</span><button type="button" class="ph" data-shot="28" aria-label="Enlarge photo 28"><img src="media/s28.jpg" alt="Warble 1 kHz · Sonique: carrier 1052 Hz, deviation 85.3 %, rate 39.8 Hz" loading="lazy"></button><figcaption><b>Photo 28</b>Sonique warble measured on the meter.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><button type="button" class="ph" data-shot="44" aria-label="Enlarge photo 44"><img src="media/s44.jpg" alt="Interacoustics · warble: 1000.2 Hz, deviation 10.3 %, rate 5.00 Hz" loading="lazy"></button><figcaption><b>Photo 44</b>Interacoustics warble measured on the meter.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><video controls preload="metadata" playsinline poster="media/v160344.jpg" src="media/v160344.mp4"></video><figcaption><b>Video 20261003_160344</b>Interacoustics warble tone.</figcaption></figure></div></div>
+<div class="card sig"><div class="hd"><h3>White noise</h3><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></div><div class="tscroll"><table><thead><tr><th>Parameter</th><th class="num obs">Sonique (observed)</th><th class="num">Interacoustics</th><th class="num exp">Expected</th><th>What is wrong</th></tr></thead><tbody><tr><td>Spectrum</td><td class="num obsv">Rises and falls like speech noise</td><td class="num">Flat (see video)</td><td class="num expv">Flat from 250 Hz to 20 kHz</td><td class="com">Wrong shape.</td></tr><tr><td>Level at 80 dB</td><td class="num obsv">85.0 dB</td><td class="num">—</td><td class="num expv">80 dB</td><td class="com">5 dB high; calibrate by −5 dB.</td></tr><tr><td>Level at 90 dB</td><td class="num obsv">98.8 dB</td><td class="num">—</td><td class="num expv">90 dB</td><td class="com">8.8 dB high.</td></tr><tr><td>Maximum level</td><td class="num obsv">—</td><td class="num">—</td><td class="num expv">95 dB</td><td class="com">Raise the limit to 95 dB.</td></tr><tr><td>Calibration</td><td class="num obsv">Not possible</td><td class="num">—</td><td class="num expv">Per frequency</td><td class="com">The device has no calibration value for noise.</td></tr></tbody></table></div><div class="media"><figure><span class="who who-ours">Sonique</span><button type="button" class="ph" data-shot="42" aria-label="Enlarge photo 42"><img src="media/s42.jpg" alt="White noise · 1/3-octave spectrum, 85.1 dB" loading="lazy"></button><figcaption><b>Photo 42</b>Sonique white noise, 1/3-octave spectrum.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><video controls preload="metadata" playsinline poster="media/v161201.jpg" src="media/v161201.mp4"></video><figcaption><b>Video 20261003_161201</b>Interacoustics white noise: the sound and the expected graph.</figcaption></figure></div></div>
+<div class="card sig"><div class="hd"><h3>Narrow-band noise</h3><span class="st st-fail"><span aria-hidden="true">✕</span>High impact</span></div><div class="tscroll"><table><thead><tr><th>Parameter</th><th class="num obs">Sonique (observed)</th><th class="num">Interacoustics</th><th class="num exp">Expected</th><th>What is wrong</th></tr></thead><tbody><tr><td>Spectrum</td><td class="num obsv">Broad, like speech noise</td><td class="num">Single peak at the centre frequency</td><td class="num expv">Pyramid around the centre frequency</td><td class="com">Not a narrow band.</td></tr><tr><td>125 Hz, 60 dB</td><td class="num obsv">74 dB</td><td class="num">—</td><td class="num expv">109 dB</td><td class="com">Far too low.</td></tr><tr><td>1 kHz, 70 dB</td><td class="num obsv">79 dB</td><td class="num">—</td><td class="num expv">83 dB</td><td class="com">4 dB low.</td></tr><tr><td>Calibration</td><td class="num obsv">Not possible</td><td class="num">—</td><td class="num expv">Per frequency</td><td class="com">The device has no calibration value for noise.</td></tr></tbody></table></div><div class="media"><figure><span class="who who-ours">Sonique</span><button type="button" class="ph" data-shot="43" aria-label="Enlarge photo 43"><img src="media/s43.jpg" alt="Narrow-band noise · 1/3-octave spectrum, 67.4 dB" loading="lazy"></button><figcaption><b>Photo 43</b>Sonique narrow-band noise, 1/3-octave spectrum.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><video controls preload="metadata" playsinline poster="media/v160934.jpg" src="media/v160934.mp4"></video><figcaption><b>Video 20261003_160934</b>Interacoustics narrow-band noise: the expected graph.</figcaption></figure><figure><span class="who who-ref">Interacoustics</span><video controls preload="metadata" playsinline poster="media/v161045.jpg" src="media/v161045.mp4"></video><figcaption><b>Video 20261003_161045</b>Interacoustics narrow-band noise: listen for the sound only; the graph was not being tested.</figcaption></figure></div></div>
+</section>
+
+<section id="actions" aria-labelledby="h-actions">
+  <div class="sec-head"><h2 id="h-actions">Action items</h2></div>
+  <div class="alist">
+    <h3>Firmware side changes (probable)</h3>
+    <ol>
+      <li>Reduce 3rd-harmonic distortion on the headphones at 90–115 dB HL (500 Hz–2 kHz), for example with a filter at the 3rd harmonic, and check the output path for clipping at those levels.</li>
+      <li>Correct level linearity at 4 kHz (85–105 dB HL) and 8 kHz (75–95 dB HL).</li>
+      <li>Warble: 1000 Hz carrier, about 5 Hz modulation rate, deviation under 15 %.</li>
+      <li>Pulse: 500 ms on and 500 ms off, with the rise, plateau and fall in photo 30.</li>
+      <li>White noise flat from 250 Hz to 20 kHz.</li>
+      <li>Narrow-band noise as a true narrow band around each centre frequency.</li>
+      <li>Store calibration values for white noise and narrow-band noise per frequency (the current calibration commands have no room for them).</li>
+      <li>Calibration resolution of 0.1 dB in place of 1 dB.</li>
+      <li>Bone vibrator: limit 250 Hz output to the clean range, and find why 4 kHz stops at 91.4 dB.</li>
+      <li>New graphs on the device for tone decay and speech test.</li>
+      <li>A device-to-app command whenever the patient releases the response button, so the app can capture it.</li>
+    </ol>
+    <h3>App side changes</h3>
+    <ol>
+      <li>Fix free-field calibration: changing a free-field value does not change the tone today, unlike headphones and bone.</li>
+      <li>Raise the white-noise limit to 95 dB.</li>
+      <li>Calibration screen: 0.1 dB up/down steps (needs firmware item 8).</li>
+      <li>Calibration screen: rows for white noise and narrow-band noise (needs firmware item 7).</li>
+      <li>Per-frequency maximum levels from these readings: headphones 250 Hz ≤ 90 dB HL and 8 kHz ≤ 110 dB HL; bone 250 Hz ≤ 35–40 dB HL and 4 kHz ≤ 60 dB HL.</li>
+      <li>Bone calibration: about −4 dB more at 500 Hz and −5 dB more at 2 kHz (to −25), then re-measure.</li>
+      <li>Tone decay: whenever the patient releases the button, the app captures it and raises the level by 5 dB (needs firmware item 11).</li>
+    </ol>
+    <h3>Specific features for tone decay</h3>
+    <ul>
+      <li>Example run: 2 kHz at 60 dB. Starting the timer starts the test and a continuous tone.</li>
+      <li>Each time the patient releases the response button, the level goes up 5 dB, for as long as the 60-second test runs.</li>
+      <li>The button release comes from the device into the app.</li>
+    </ul>
+    <h3>Specific features for speech test</h3>
+    <ul>
+      <li>A VU meter on the speech screen.</li>
+      <li>Microphone calibration with −6, −3, 0 and +3 dB settings.</li>
+      <li>The audiologist speaks the words and guides the patient through one microphone, and monitors through a headphone with a monitor mic. The patient uses headphones or free field.</li>
+      <li>The audiologist's microphone is off during pure-tone tests.</li>
+      <li>The audiologist can see when the patient responds to a tone.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="photos" aria-labelledby="h-photos">
+  <div class="sec-head"><h2 id="h-photos">Meter photos</h2><p>Cropped to the meter display. Numbers match the screenshot numbers in the notes. Select a photo to enlarge it.</p></div>
+  <h3>Air conduction</h3><div class="gal"><figure><button type="button" class="ph" data-shot="1" aria-label="Enlarge photo 1"><img id="img1" src="media/s01.jpg" alt="AC 250 Hz · 1/3-octave spectrum, 115.0 dB" loading="lazy"></button><figcaption><b>1</b> AC 250 Hz · 1/3-octave spectrum, 115.0 dB</figcaption></figure><figure><button type="button" class="ph" data-shot="2" aria-label="Enlarge photo 2"><img id="img2" src="media/s02.jpg" alt="AC 250 Hz · 115.0 dB · THD 2.32 %" loading="lazy"></button><figcaption><b>2</b> AC 250 Hz · 115.0 dB · THD 2.32 %</figcaption></figure><figure><button type="button" class="ph" data-shot="3" aria-label="Enlarge photo 3"><img id="img3" src="media/s03.jpg" alt="AC 250 Hz · 105.3 dB · THD 3.01 %" loading="lazy"></button><figcaption><b>3</b> AC 250 Hz · 105.3 dB · THD 3.01 %</figcaption></figure><figure><button type="button" class="ph" data-shot="4" aria-label="Enlarge photo 4"><img id="img4" src="media/s04.jpg" alt="AC 125 Hz · spectrum, Lmax 126.6 dB" loading="lazy"></button><figcaption><b>4</b> AC 125 Hz · spectrum, Lmax 126.6 dB</figcaption></figure><figure><button type="button" class="ph" data-shot="5" aria-label="Enlarge photo 5"><img id="img5" src="media/s05.jpg" alt="AC 125 Hz · 1/3-octave spectrum, 121.0 dB" loading="lazy"></button><figcaption><b>5</b> AC 125 Hz · 1/3-octave spectrum, 121.0 dB</figcaption></figure><figure><button type="button" class="ph" data-shot="6" aria-label="Enlarge photo 6"><img id="img6" src="media/s06.jpg" alt="AC 125 Hz · 121.0 dB · THD 3.31 %" loading="lazy"></button><figcaption><b>6</b> AC 125 Hz · 121.0 dB · THD 3.31 %</figcaption></figure><figure><button type="button" class="ph" data-shot="7" aria-label="Enlarge photo 7"><img id="img7" src="media/s07.jpg" alt="AC 125 Hz · 126.6 dB · THD 2.94 %" loading="lazy"></button><figcaption><b>7</b> AC 125 Hz · 126.6 dB · THD 2.94 %</figcaption></figure><figure><button type="button" class="ph" data-shot="8" aria-label="Enlarge photo 8"><img id="img8" src="media/s08.jpg" alt="AC 125 Hz · spectrum, Lmax 93.8 dB" loading="lazy"></button><figcaption><b>8</b> AC 125 Hz · spectrum, Lmax 93.8 dB</figcaption></figure><figure><button type="button" class="ph" data-shot="9" aria-label="Enlarge photo 9"><img id="img9" src="media/s09.jpg" alt="AC 500 Hz · 101.6 dB · THD 2.29 %" loading="lazy"></button><figcaption><b>9</b> AC 500 Hz · 101.6 dB · THD 2.29 %</figcaption></figure><figure><button type="button" class="ph" data-shot="10" aria-label="Enlarge photo 10"><img id="img10" src="media/s10.jpg" alt="AC 500 Hz · 111.6 dB · THD 4.18 %" loading="lazy"></button><figcaption><b>10</b> AC 500 Hz · 111.6 dB · THD 4.18 %</figcaption></figure><figure><button type="button" class="ph" data-shot="11" aria-label="Enlarge photo 11"><img id="img11" src="media/s11.jpg" alt="AC 500 Hz · 116.4 dB · THD 3.52 %" loading="lazy"></button><figcaption><b>11</b> AC 500 Hz · 116.4 dB · THD 3.52 %</figcaption></figure><figure><button type="button" class="ph" data-shot="12" aria-label="Enlarge photo 12"><img id="img12" src="media/s12.jpg" alt="AC 500 Hz · 121.2 dB · THD 2.60 %" loading="lazy"></button><figcaption><b>12</b> AC 500 Hz · 121.2 dB · THD 2.60 %</figcaption></figure><figure><button type="button" class="ph" data-shot="13" aria-label="Enlarge photo 13"><img id="img13" src="media/s13.jpg" alt="AC 1 kHz · 101.4 dB · THD 2.95 %" loading="lazy"></button><figcaption><b>13</b> AC 1 kHz · 101.4 dB · THD 2.95 %</figcaption></figure><figure><button type="button" class="ph" data-shot="14" aria-label="Enlarge photo 14"><img id="img14" src="media/s14.jpg" alt="AC 1 kHz · 106.1 dB · THD 6.23 %" loading="lazy"></button><figcaption><b>14</b> AC 1 kHz · 106.1 dB · THD 6.23 %</figcaption></figure><figure><button type="button" class="ph" data-shot="15" aria-label="Enlarge photo 15"><img id="img15" src="media/s15.jpg" alt="AC 1 kHz · 111.4 dB · THD 6.73 %" loading="lazy"></button><figcaption><b>15</b> AC 1 kHz · 111.4 dB · THD 6.73 %</figcaption></figure><figure><button type="button" class="ph" data-shot="16" aria-label="Enlarge photo 16"><img id="img16" src="media/s16.jpg" alt="AC 1 kHz · 116.7 dB · THD 5.44 %" loading="lazy"></button><figcaption><b>16</b> AC 1 kHz · 116.7 dB · THD 5.44 %</figcaption></figure><figure><button type="button" class="ph" data-shot="17" aria-label="Enlarge photo 17"><img id="img17" src="media/s17.jpg" alt="AC 1 kHz · 121.7 dB · THD 3.97 %" loading="lazy"></button><figcaption><b>17</b> AC 1 kHz · 121.7 dB · THD 3.97 %</figcaption></figure><figure><button type="button" class="ph" data-shot="18" aria-label="Enlarge photo 18"><img id="img18" src="media/s18.jpg" alt="AC 1 kHz · 126.7 dB · THD 2.76 %" loading="lazy"></button><figcaption><b>18</b> AC 1 kHz · 126.7 dB · THD 2.76 %</figcaption></figure><figure><button type="button" class="ph" data-shot="19" aria-label="Enlarge photo 19"><img id="img19" src="media/s19.jpg" alt="AC 2 kHz · 98.6 dB · THD 2.30 %" loading="lazy"></button><figcaption><b>19</b> AC 2 kHz · 98.6 dB · THD 2.30 %</figcaption></figure><figure><button type="button" class="ph" data-shot="20" aria-label="Enlarge photo 20"><img id="img20" src="media/s20.jpg" alt="AC 2 kHz · 103.0 dB · THD 5.85 %" loading="lazy"></button><figcaption><b>20</b> AC 2 kHz · 103.0 dB · THD 5.85 %</figcaption></figure><figure><button type="button" class="ph" data-shot="21" aria-label="Enlarge photo 21"><img id="img21" src="media/s21.jpg" alt="AC 2 kHz · 108.3 dB · THD 7.14 %" loading="lazy"></button><figcaption><b>21</b> AC 2 kHz · 108.3 dB · THD 7.14 %</figcaption></figure><figure><button type="button" class="ph" data-shot="22" aria-label="Enlarge photo 22"><img id="img22" src="media/s22.jpg" alt="AC 2 kHz · 113.9 dB · THD 5.93 %" loading="lazy"></button><figcaption><b>22</b> AC 2 kHz · 113.9 dB · THD 5.93 %</figcaption></figure><figure><button type="button" class="ph" data-shot="23" aria-label="Enlarge photo 23"><img id="img23" src="media/s23.jpg" alt="AC 2 kHz · 119.2 dB · THD 4.30 %" loading="lazy"></button><figcaption><b>23</b> AC 2 kHz · 119.2 dB · THD 4.30 %</figcaption></figure><figure><button type="button" class="ph" data-shot="24" aria-label="Enlarge photo 24"><img id="img24" src="media/s24.jpg" alt="AC 2 kHz · 1/3-octave spectrum, 3rd harmonic at 6.3 kHz" loading="lazy"></button><figcaption><b>24</b> AC 2 kHz · 1/3-octave spectrum, 3rd harmonic at 6.3 kHz</figcaption></figure><figure><button type="button" class="ph" data-shot="25" aria-label="Enlarge photo 25"><img id="img25" src="media/s25.jpg" alt="AC 2 kHz · 124.4 dB · THD 2.91 %" loading="lazy"></button><figcaption><b>25</b> AC 2 kHz · 124.4 dB · THD 2.91 %</figcaption></figure><figure><button type="button" class="ph" data-shot="26" aria-label="Enlarge photo 26"><img id="img26" src="media/s26.jpg" alt="AC 2 kHz · 129.4 dB · THD 2.02 %" loading="lazy"></button><figcaption><b>26</b> AC 2 kHz · 129.4 dB · THD 2.02 %</figcaption></figure><figure><button type="button" class="ph" data-shot="27" aria-label="Enlarge photo 27"><img id="img27" src="media/s27.jpg" alt="AC 4 kHz · 119.5 dB · THD 0.36 %" loading="lazy"></button><figcaption><b>27</b> AC 4 kHz · 119.5 dB · THD 0.36 %</figcaption></figure></div>
+<h3>Warble and pulse</h3><div class="gal"><figure><button type="button" class="ph" data-shot="28" aria-label="Enlarge photo 28"><img id="img28" src="media/s28.jpg" alt="Warble 1 kHz · Sonique: carrier 1052 Hz, deviation 85.3 %, rate 39.8 Hz" loading="lazy"></button><figcaption><b>28</b> Warble 1 kHz · Sonique: carrier 1052 Hz, deviation 85.3 %, rate 39.8 Hz</figcaption></figure><figure><button type="button" class="ph" data-shot="29" aria-label="Enlarge photo 29"><img id="img29" src="media/s29.jpg" alt="Pulse 1 kHz · Sonique: on 133.9 ms, off 265.7 ms" loading="lazy"></button><figcaption><b>29</b> Pulse 1 kHz · Sonique: on 133.9 ms, off 265.7 ms</figcaption></figure><figure><button type="button" class="ph" data-shot="30" aria-label="Enlarge photo 30"><img id="img30" src="media/s30.jpg" alt="Audiologist&#x27;s pulse target: 500 ms on / 500 ms off, rise 100 · plateau 300 · fall 100 ms" loading="lazy"></button><figcaption><b>30</b> Audiologist&#x27;s pulse target: 500 ms on / 500 ms off, rise 100 · plateau 300 · fall 100 ms</figcaption></figure><figure><button type="button" class="ph" data-shot="44" aria-label="Enlarge photo 44"><img id="img44" src="media/s44.jpg" alt="Interacoustics · warble: 1000.2 Hz, deviation 10.3 %, rate 5.00 Hz" loading="lazy"></button><figcaption><b>44</b> Interacoustics · warble: 1000.2 Hz, deviation 10.3 %, rate 5.00 Hz</figcaption></figure><figure><button type="button" class="ph" data-shot="45" aria-label="Enlarge photo 45"><img id="img45" src="media/s45.jpg" alt="Interacoustics · pulse: on 495.8 ms, off 504.2 ms" loading="lazy"></button><figcaption><b>45</b> Interacoustics · pulse: on 495.8 ms, off 504.2 ms</figcaption></figure></div>
+<h3>Bone conduction</h3><div class="gal"><figure><button type="button" class="ph" data-shot="31" aria-label="Enlarge photo 31"><img id="img31" src="media/s31.jpg" alt="BC 250 Hz · 94.9 dB · THD 3.84 %" loading="lazy"></button><figcaption><b>31</b> BC 250 Hz · 94.9 dB · THD 3.84 %</figcaption></figure><figure><button type="button" class="ph" data-shot="32" aria-label="Enlarge photo 32"><img id="img32" src="media/s32.jpg" alt="BC 250 Hz · 100.2 dB · THD 5.35 %" loading="lazy"></button><figcaption><b>32</b> BC 250 Hz · 100.2 dB · THD 5.35 %</figcaption></figure><figure><button type="button" class="ph" data-shot="33" aria-label="Enlarge photo 33"><img id="img33" src="media/s33.jpg" alt="BC 250 Hz · 105.6 dB · THD 9.11 %" loading="lazy"></button><figcaption><b>33</b> BC 250 Hz · 105.6 dB · THD 9.11 %</figcaption></figure><figure><button type="button" class="ph" data-shot="34" aria-label="Enlarge photo 34"><img id="img34" src="media/s34.jpg" alt="BC 250 Hz · 112.3 dB · THD 14.67 %" loading="lazy"></button><figcaption><b>34</b> BC 250 Hz · 112.3 dB · THD 14.67 %</figcaption></figure><figure><button type="button" class="ph" data-shot="35" aria-label="Enlarge photo 35"><img id="img35" src="media/s35.jpg" alt="BC 250 Hz · 118.3 dB · THD 25.66 %" loading="lazy"></button><figcaption><b>35</b> BC 250 Hz · 118.3 dB · THD 25.66 %</figcaption></figure><figure><button type="button" class="ph" data-shot="36" aria-label="Enlarge photo 36"><img id="img36" src="media/s36.jpg" alt="BC 500 Hz · 90.8 dB · THD 2.59 %" loading="lazy"></button><figcaption><b>36</b> BC 500 Hz · 90.8 dB · THD 2.59 %</figcaption></figure><figure><button type="button" class="ph" data-shot="37" aria-label="Enlarge photo 37"><img id="img37" src="media/s37.jpg" alt="BC 500 Hz · 101.3 dB · THD 1.79 %" loading="lazy"></button><figcaption><b>37</b> BC 500 Hz · 101.3 dB · THD 1.79 %</figcaption></figure><figure><button type="button" class="ph" data-shot="38" aria-label="Enlarge photo 38"><img id="img38" src="media/s38.jpg" alt="BC 1 kHz · 87.5 dB · THD 2.50 %" loading="lazy"></button><figcaption><b>38</b> BC 1 kHz · 87.5 dB · THD 2.50 %</figcaption></figure><figure><button type="button" class="ph" data-shot="39" aria-label="Enlarge photo 39"><img id="img39" src="media/s39.jpg" alt="BC 1 kHz · 98.3 dB · THD 1.72 %" loading="lazy"></button><figcaption><b>39</b> BC 1 kHz · 98.3 dB · THD 1.72 %</figcaption></figure><figure><button type="button" class="ph" data-shot="40" aria-label="Enlarge photo 40"><img id="img40" src="media/s40.jpg" alt="B71 bone vibrator reference drive voltages (RadioEar)" loading="lazy"></button><figcaption><b>40</b> B71 bone vibrator reference drive voltages (RadioEar)</figcaption></figure></div>
+<h3>Noise and calibration table</h3><div class="gal"><figure><button type="button" class="ph" data-shot="41" aria-label="Enlarge photo 41"><img id="img41" src="media/s41.jpg" alt="Sonique calibration screen after the session (fw 1.032)" loading="lazy"></button><figcaption><b>41</b> Sonique calibration screen after the session (fw 1.032)</figcaption></figure><figure><button type="button" class="ph" data-shot="42" aria-label="Enlarge photo 42"><img id="img42" src="media/s42.jpg" alt="White noise · 1/3-octave spectrum, 85.1 dB" loading="lazy"></button><figcaption><b>42</b> White noise · 1/3-octave spectrum, 85.1 dB</figcaption></figure><figure><button type="button" class="ph" data-shot="43" aria-label="Enlarge photo 43"><img id="img43" src="media/s43.jpg" alt="Narrow-band noise · 1/3-octave spectrum, 67.4 dB" loading="lazy"></button><figcaption><b>43</b> Narrow-band noise · 1/3-octave spectrum, 67.4 dB</figcaption></figure></div>
+</section>
+
+<footer>Prepared from the review notes of 3 October 2026 and the photos and videos taken during the session. Expected values and tolerances are the ones used on the day; the IEC 60645-1 limits should be confirmed before this is used as a formal calibration record.</footer>
+</div>
+
+<dialog id="viewer" aria-label="Photo viewer">
+  <div class="dv">
+    <img id="dv-img" alt="">
+    <div class="dv-bar"><p id="dv-cap"></p>
+      <div style="display:flex;gap:8px"><button type="button" class="btn" id="dv-prev">Previous</button><button type="button" class="btn" id="dv-next">Next</button><button type="button" class="btn" id="dv-close">Close</button></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const CAPS = {"1": "AC 250 Hz \u00b7 1/3-octave spectrum, 115.0 dB", "2": "AC 250 Hz \u00b7 115.0 dB \u00b7 THD 2.32 %", "3": "AC 250 Hz \u00b7 105.3 dB \u00b7 THD 3.01 %", "4": "AC 125 Hz \u00b7 spectrum, Lmax 126.6 dB", "5": "AC 125 Hz \u00b7 1/3-octave spectrum, 121.0 dB", "6": "AC 125 Hz \u00b7 121.0 dB \u00b7 THD 3.31 %", "7": "AC 125 Hz \u00b7 126.6 dB \u00b7 THD 2.94 %", "8": "AC 125 Hz \u00b7 spectrum, Lmax 93.8 dB", "9": "AC 500 Hz \u00b7 101.6 dB \u00b7 THD 2.29 %", "10": "AC 500 Hz \u00b7 111.6 dB \u00b7 THD 4.18 %", "11": "AC 500 Hz \u00b7 116.4 dB \u00b7 THD 3.52 %", "12": "AC 500 Hz \u00b7 121.2 dB \u00b7 THD 2.60 %", "13": "AC 1 kHz \u00b7 101.4 dB \u00b7 THD 2.95 %", "14": "AC 1 kHz \u00b7 106.1 dB \u00b7 THD 6.23 %", "15": "AC 1 kHz \u00b7 111.4 dB \u00b7 THD 6.73 %", "16": "AC 1 kHz \u00b7 116.7 dB \u00b7 THD 5.44 %", "17": "AC 1 kHz \u00b7 121.7 dB \u00b7 THD 3.97 %", "18": "AC 1 kHz \u00b7 126.7 dB \u00b7 THD 2.76 %", "19": "AC 2 kHz \u00b7 98.6 dB \u00b7 THD 2.30 %", "20": "AC 2 kHz \u00b7 103.0 dB \u00b7 THD 5.85 %", "21": "AC 2 kHz \u00b7 108.3 dB \u00b7 THD 7.14 %", "22": "AC 2 kHz \u00b7 113.9 dB \u00b7 THD 5.93 %", "23": "AC 2 kHz \u00b7 119.2 dB \u00b7 THD 4.30 %", "24": "AC 2 kHz \u00b7 1/3-octave spectrum, 3rd harmonic at 6.3 kHz", "25": "AC 2 kHz \u00b7 124.4 dB \u00b7 THD 2.91 %", "26": "AC 2 kHz \u00b7 129.4 dB \u00b7 THD 2.02 %", "27": "AC 4 kHz \u00b7 119.5 dB \u00b7 THD 0.36 %", "28": "Warble 1 kHz \u00b7 Sonique: carrier 1052 Hz, deviation 85.3 %, rate 39.8 Hz", "29": "Pulse 1 kHz \u00b7 Sonique: on 133.9 ms, off 265.7 ms", "30": "Audiologist's pulse target: 500 ms on / 500 ms off, rise 100 \u00b7 plateau 300 \u00b7 fall 100 ms", "31": "BC 250 Hz \u00b7 94.9 dB \u00b7 THD 3.84 %", "32": "BC 250 Hz \u00b7 100.2 dB \u00b7 THD 5.35 %", "33": "BC 250 Hz \u00b7 105.6 dB \u00b7 THD 9.11 %", "34": "BC 250 Hz \u00b7 112.3 dB \u00b7 THD 14.67 %", "35": "BC 250 Hz \u00b7 118.3 dB \u00b7 THD 25.66 %", "36": "BC 500 Hz \u00b7 90.8 dB \u00b7 THD 2.59 %", "37": "BC 500 Hz \u00b7 101.3 dB \u00b7 THD 1.79 %", "38": "BC 1 kHz \u00b7 87.5 dB \u00b7 THD 2.50 %", "39": "BC 1 kHz \u00b7 98.3 dB \u00b7 THD 1.72 %", "40": "B71 bone vibrator reference drive voltages (RadioEar)", "41": "Sonique calibration screen after the session (fw 1.032)", "42": "White noise \u00b7 1/3-octave spectrum, 85.1 dB", "43": "Narrow-band noise \u00b7 1/3-octave spectrum, 67.4 dB", "44": "Interacoustics \u00b7 warble: 1000.2 Hz, deviation 10.3 %, rate 5.00 Hz", "45": "Interacoustics \u00b7 pulse: on 495.8 ms, off 504.2 ms"};
+
+  // status key above the AC table
+  const key = document.querySelector(".legend-line");
+  if (key) key.innerHTML = [["pass", "✓", "Pass: inside tolerance, THD under 2.0 %"], ["warn", "!", "Near limit: THD 2.0–2.5 %"], ["fail", "✕", "High impact: outside tolerance or THD over 2.5 %"], ["check", "?", "Check: notes and photo disagree"]]
+    .map(([c, i, t]) => `<span><span class="st st-${c}"><span aria-hidden="true">${i}</span>${t.split(":")[0]}</span>${t.split(":")[1]}</span>`).join("");
+
+  // photo viewer
+  const dlg = document.getElementById("viewer"), img = document.getElementById("dv-img"), cap = document.getElementById("dv-cap");
+  const ids = Object.keys(CAPS).map(Number).sort((a, b) => a - b);
+  let cur = 0;
+  const open = (id) => { const src = document.getElementById("img" + id); if (!src) return; cur = id; img.src = src.src; img.alt = CAPS[id]; cap.innerHTML = `<b>${id}</b>${CAPS[id]}`; if (!dlg.open) { try { dlg.showModal(); } catch (_) { dlg.setAttribute("open", ""); } } };
+  const step = (d) => { const i = ids.indexOf(cur); open(ids[(i + d + ids.length) % ids.length]); };
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-shot]"); if (b) open(+b.dataset.shot); });
+  document.getElementById("dv-prev").onclick = () => step(-1);
+  document.getElementById("dv-next").onclick = () => step(1);
+  document.getElementById("dv-close").onclick = () => dlg.close();
+  dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") step(1); if (e.key === "ArrowLeft") step(-1); });
+})();
+</script>
+
+</body>
+</html>
